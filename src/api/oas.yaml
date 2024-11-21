@@ -1,0 +1,242 @@
+openapi: 3.0.0
+info:
+  title: Example API
+  version: 1.0.0
+  description: API documentation for Example microservice
+servers:
+  - url: http://localhost:3000/api/v1
+paths:
+  /examples:
+    get:
+      summary: Get all examples
+      tags:
+        - Example
+      responses:
+        '200':
+          description: A list of examples
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Success!
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Example'
+                  appCode:
+                    type: string
+                    example: OK
+                  timestamp:
+                    type: string
+                    example: '2023-10-01T12:00:00.000Z'
+    post:
+      summary: Create a new example
+      tags:
+        - Example
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewExample'
+      responses:
+        '201':
+          description: The created example
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Example created successfully
+                  data:
+                    $ref: '#/components/schemas/Example'
+                  appCode:
+                    type: string
+                    example: OK
+                  timestamp:
+                    type: string
+                    example: '2023-10-01T12:00:00.000Z'
+  /examples/{id}:
+    get:
+      summary: Get a specific example by ID
+      tags:
+        - Example
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID of the example to get
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The requested example
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Success!
+                  data:
+                    $ref: '#/components/schemas/Example'
+                  appCode:
+                    type: string
+                    example: OK
+                  timestamp:
+                    type: string
+                    example: '2023-10-01T12:00:00.000Z'
+        '404':
+          description: Example not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Example not found
+                  appCode:
+                    type: string
+                    example: UNKNOWN_ERROR
+                  timestamp:
+                    type: string
+                    example: '2023-10-01T12:00:00.000Z'
+    put:
+      summary: Update an existing example by ID
+      tags:
+        - Example
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID of the example to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Example'
+      responses:
+        '200':
+          description: The updated example
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Example updated successfully
+                  data:
+                    $ref: '#/components/schemas/Example'
+                  appCode:
+                    type: string
+                    example: OK
+                  timestamp:
+                    type: string
+                    example: '2023-10-01T12:00:00.000Z'
+        '404':
+          description: Example not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Example not found
+                  appCode:
+                    type: string
+                    example: UNKNOWN_ERROR
+                  timestamp:
+                    type: string
+                    example: '2023-10-01T12:00:00.000Z'
+    delete:
+      summary: Delete an example by ID
+      tags:
+        - Example
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID of the example to delete
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successfully deleted
+        '404':
+          description: Example not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Example not found
+                  appCode:
+                    type: string
+                    example: UNKNOWN_ERROR
+                  timestamp:
+                    type: string
+                    example: '2023-10-01T12:00:00.000Z'
+components:
+  schemas:
+    Example:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: '60c72b2f9b1d8f0d8d0b6f9e'
+        name:
+          type: string
+          example: Example Name
+        value:
+          type: number
+          example: 123
+      required:
+        - name
+        - value
+    NewExample:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Example Name
+        value:
+          type: number
+          example: 123
+      required:
+        - name
+        - value
