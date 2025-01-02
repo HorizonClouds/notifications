@@ -5,32 +5,32 @@ import apiRouter from './routes/exampleRoute.js'; // Import API routes
 import dotenv from 'dotenv'; // Import dotenv for environment variables
 import standardResponseMiddleware from './middlewares/standardResponseMiddleware.js'; // Import custom response middleware
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import './models/analyticModel.js'; // Importa notificationModels.js para registrar modelos
-import analyticRoute from './routes/analyticRoute.js';  // Asegúrate de que esté correctamente importado
-import './models/reportModel.js'; // Importa notificationModels.js para registrar modelos
-import reportRoute from './routes/reportRoute.js';  // Asegúrate de que esté correctamente importado
+import notificationRoute from './routes/notificationRoute.js';
+import './models/notificationModel.js'; // Importa notificationModels.js para registrar modelos
 import errorHandler from './middlewares/errorHandler.js';
 import { BadJsonError } from './utils/customErrors.js';
 import connectDB from './db/connection.js';
+import cors from 'cors'; // Import CORS middleware
 
 dotenv.config(); // Load environment variables
 
 const app = express(); // Create an Express application
-const port = process.env.BACKEND_PORT || 3000; // Define port
+const port = process.env.BACKEND_PORT || 6303; // Define port
 
 // Middlewares
 app.use(express.json()); // Parse JSON bodies
+app.use(cors());
+app.use(standardResponseMiddleware); 
+
 // Middleware to handle JSON parsing errors
 app.use((err, req, res, next) => {
   if (err) next(new BadJsonError('Invalid JSON', err.message));
   next();
 });
-app.use(standardResponseMiddleware); 
+
 // Routes
 app.use('/api', apiRouter); // Use API routes
-app.use('/api', analyticRoute);
-app.use('/api', reportRoute);
-
+app.use('/api', notificationRoute);
 
 app.get('/', (req, res) => {
   // Redirect to API documentation
