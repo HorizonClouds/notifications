@@ -11,6 +11,9 @@ import errorHandler from './middlewares/errorHandler.js';
 import { BadJsonError } from './utils/customErrors.js';
 import connectDB from './db/connection.js';
 import cors from 'cors'; // Import CORS middleware
+import './utils/logger.js';
+logger.info('Service is starting...');
+import './consumer.js'; // Importa el consumidor para que se ejecute automáticamente
 
 dotenv.config(); // Load environment variables
 
@@ -54,8 +57,10 @@ if (process.env.NODE_ENV === 'test') {
 connectDB()
   .then(() => {
     app.listen(port, () => {
-      console.log(`Server is running on http://localhost:${port}`);
-      console.log(`API documentation is available at http://localhost:${port}/api-docs`);
+      logger.info(`Server is running on http://localhost:${port}`);
+      logger.info(`API documentation is available at http://localhost:${port}/api-docs`);
+      logger.debug('Debugging information');
+      logger.info('Service has started successfully');
     });
   })
   .catch((error) => {

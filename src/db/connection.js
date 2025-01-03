@@ -16,7 +16,7 @@ const connectDB = async () => {
 
   try {
     //timeout 3 seconds
-    await mongoose.connect(mongoURI, { connectTimeoutMS: 3000, serverSelectionTimeoutMS: 5000 });
+    await mongoose.connect(mongoURI, { connectTimeoutMS: 40000, serverSelectionTimeoutMS: 45000 });
     console.log(`Connected to MongoDB in ${process.env.NODE_ENV === 'test' ? 'test (in-memory)' : 'default'} mode`);
   } catch (error) {
     console.error('Initial connection failed, retrying with in-memory MongoDB.', error.message);
