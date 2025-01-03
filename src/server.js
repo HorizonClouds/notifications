@@ -1,7 +1,6 @@
 // server.js
 import express from 'express'; // Import Express framework
 import { swaggerSetup } from './swagger.js'; // Import Swagger setup
-import apiRouter from './routes/exampleRoute.js'; // Import API routes
 import dotenv from 'dotenv'; // Import dotenv for environment variables
 import standardResponseMiddleware from './middlewares/standardResponseMiddleware.js'; // Import custom response middleware
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -13,7 +12,7 @@ import connectDB from './db/connection.js';
 import cors from 'cors'; // Import CORS middleware
 import './utils/logger.js';
 logger.info('Service is starting...');
-import './consumer.js'; // Importa el consumidor para que se ejecute automáticamente
+import './utils/consumer.js'; // Importa el consumidor para que se ejecute automáticamente
 
 dotenv.config(); // Load environment variables
 
@@ -32,7 +31,6 @@ app.use((err, req, res, next) => {
 });
 
 // Routes
-app.use('/api', apiRouter); // Use API routes
 app.use('/api', notificationRoute);
 
 app.get('/', (req, res) => {

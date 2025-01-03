@@ -1,6 +1,6 @@
 import { Kafka } from 'kafkajs';
 import config from './config.js';  // Configuración de Kafka
-import notificationService from './services/notificationService.js'; // Importamos el servicio de notificaciones
+import notificationService from '../services/notificationService.js'; // Importamos el servicio de notificaciones
 
 const kafka = new Kafka({
   clientId: 'notification-service',
