@@ -58,3 +58,34 @@ export const getAllNotifications = async (req, res, next) => {
         next(error);
     }
 };
+
+export const updateNotification = async (req, res, next) => {
+    try {
+      const { id } = req.params; 
+      const updateData = req.body; 
+      const updatedNotification = await notificationService.updateNotification(id, updateData);
+        res.sendSuccess(
+        removeMongoFields(updatedNotification), // Limpia los campos internos de Mongo (_id, __v)
+        'Notification updated successfully'
+      );
+    } catch (error) {
+      next(error); // Si ocurre algún error, pasa el error al siguiente manejador de errores
+    }
+  };
+
+  export const deleteNotification = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+  
+      const deletedNotification = await notificationService.deleteNotification(id);
+  
+      res.sendSuccess(
+        removeMongoFields(deletedNotification),
+        'Notification deleted successfully'
+      );
+    } catch (error) {
+      next(error); // Si ocurre algún error, pasa el error al siguiente manejador de errores
+    }
+  };
+  
+  
