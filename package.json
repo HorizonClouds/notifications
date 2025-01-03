@@ -12,7 +12,7 @@
     "dev": "nodemon -L",
     "start-mongodb": "docker run --name mongodb -d -p 27017:27017 -v mongo-data:/data/db mongo",
     "format": "prettier --write \"src/**/*.{js,cjs,mjs}\"",
-    "test": "cross-env NODE_ENV=test mocha 'src/test/**/*.js' --recursive --exit --timeout 10000"
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
@@ -41,7 +41,8 @@
     "chai-http": "^5.1.1",
     "mocha": "^10.8.2",
     "mongodb-memory-server": "^10.1.2",
-    "nodemon": "^3.1.7",
-    "prettier": "^3.3.3"
+    "nodemon": "^3.1.9",
+    "prettier": "^3.3.3",
+    "vitest": "^2.1.8"
   }
 }
