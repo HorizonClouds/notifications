@@ -20,18 +20,22 @@ jobs:
         options: --health-cmd="redis-server --version" --health-timeout=5s --health-retries=3
 
     steps:
+      # Paso para hacer checkout del repositorio
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Configurar Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      # Iniciar sesión en Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
+      # Crear y subir la imagen de Docker al Docker Hub
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
@@ -40,7 +44,7 @@ jobs:
           push: true
           tags: javifdez7/horizon-notifications:develop
 
-      # Add this step to wait for Redis to be ready
+      # Esperar que Redis esté listo
       - name: Wait for Redis to be ready
         run: |
           for i in {1..30}; do
@@ -52,7 +56,11 @@ jobs:
             sleep 2;
           done
 
+      # Ejecutar los tests
       - name: Run tests
         run: |
+          # Instalar dependencias
           npm install
-          npm run test
+
+          # Ejecutar las pruebas
+          npm test
