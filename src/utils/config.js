@@ -14,4 +14,5 @@ const config = {
   logLevel: process.env.LOGLEVEL || 'INFO',
 };
 
+export const CACHE_TTL = 3600; // Establecer 1 hora en segundos
 export default config;  // Exporta como 'default'
