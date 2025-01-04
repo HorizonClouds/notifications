@@ -10,7 +10,7 @@ import {
 } from '../services/notificationService.js';
 import NotificationModel from '../models/notificationModel.js';
 
-//PRUEBA DE COMPONENTES
+//PRUEBA DE COMPONENTES 
 
 import { createNotification } from '../services/notificationService.js';
 import NotificationModel from '../models/notificationModel.js';
@@ -137,9 +137,9 @@ describe('[Integration][Service] Notification Tests', () => {
 });
 
 //PRUEBA DE COMPONENTES
-jest.mock('../models/notificationModel.js');
-jest.mock('../models/notificationModelSummary.js');
-jest.mock('../utils/throttleManager.js');
+vi.mock('../models/notificationModel.js');
+vi.mock('../models/notificationModelSummary.js');
+vi.mock('../utils/throttleManager.js');
 
 describe('createNotification service', () => {
   it('should create a new notification and update the notification summary if "NOT SEEN"', async () => {
@@ -187,7 +187,7 @@ describe('createNotification service', () => {
   });
 });
 
-jest.mock('../models/notificationModel.js');
+vi.mock('../models/notificationModel.js');
 
 describe('getNotificationById service', () => {
   it('should return notification when found', async () => {
@@ -215,7 +215,7 @@ describe('getNotificationById service', () => {
 });
 
 
-jest.mock('../models/notificationModel.js');
+vi.mock('../models/notificationModel.js');
 
 describe('getNotificationByUserId service', () => {
   it('should return notifications by userId', async () => {
