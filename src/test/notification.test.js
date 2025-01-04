@@ -10,6 +10,20 @@ import {
 } from '../services/notificationService.js';
 import NotificationModel from '../models/notificationModel.js';
 
+//PRUEBA DE COMPONENTES
+
+import { createNotification } from '../services/notificationService.js';
+import NotificationModel from '../models/notificationModel.js';
+import NotificationSummary from '../models/notificationModelSummary.js';
+import { BadRequestError } from '../errors/index.js';
+import { ThrottleManager } from '../utils/throttleManager.js';
+import { getNotificationById } from '../services/notificationService.js';
+import NotificationModel from '../models/notificationModel.js';
+import { NotFoundError } from '../errors/index.js';
+import { getNotificationByUserId } from '../services/notificationService.js';
+import NotificationModel from '../models/notificationModel.js';
+import { NotFoundError } from '../errors/index.js';
+
 const exampleNotification = {
   userId: new mongoose.Types.ObjectId(),
   config: { email: true },
@@ -120,4 +134,112 @@ describe('[Integration][Service] Notification Tests', () => {
     await expect(deleteNotification(invalidId.toString())).rejects.toThrow('Notification not found');
   });
 
+});
+
+//PRUEBA DE COMPONENTES
+jest.mock('../models/notificationModel.js');
+jest.mock('../models/notificationModelSummary.js');
+jest.mock('../utils/throttleManager.js');
+
+describe('createNotification service', () => {
+  it('should create a new notification and update the notification summary if "NOT SEEN"', async () => {
+    // Arrange
+    const notificationData = {
+      userId: 'mockUserId',
+      config: { email: true },
+      type: 'likes',
+      notificationStatus: 'NOT SEEN',
+      createdAt: new Date(),
+    };
+
+    const savedNotification = { ...notificationData, _id: 'mockedId' };
+    NotificationModel.prototype.save.mockResolvedValue(savedNotification); // Simular guardado en la base de datos
+
+    // Mocks para el resumen de notificaciones
+    NotificationSummary.findOneAndUpdate.mockResolvedValue(true); // Simular actualización de la vista materializada
+
+    // Act
+    const result = await createNotification(notificationData);
+
+    // Assert
+    expect(result._id).toBe('mockedId');
+    expect(NotificationModel.prototype.save).toHaveBeenCalledWith(notificationData); // Verifica que se llamó con los datos correctos
+    expect(NotificationSummary.findOneAndUpdate).toHaveBeenCalledWith(
+      { userId: 'mockUserId' },
+      expect.objectContaining({ $inc: { unseenCount: 1 } })
+    );
+  });
+
+  it('should throw BadRequestError if notification creation fails', async () => {
+    // Arrange
+    const notificationData = {
+      userId: 'mockUserId',
+      config: { email: true },
+      type: 'likes',
+      notificationStatus: 'NOT SEEN',
+      createdAt: new Date(),
+    };
+
+    NotificationModel.prototype.save.mockRejectedValue(new Error('Database error'));
+
+    // Act & Assert
+    await expect(createNotification(notificationData)).rejects.toThrowError(BadRequestError);
+  });
+});
+
+jest.mock('../models/notificationModel.js');
+
+describe('getNotificationById service', () => {
+  it('should return notification when found', async () => {
+    // Arrange
+    const mockId = 'mockId';
+    const notification = { _id: mockId, type: 'likes', notificationStatus: 'NOT SEEN' };
+    NotificationModel.findById.mockResolvedValue(notification);
+
+    // Act
+    const result = await getNotificationById(mockId);
+
+    // Assert
+    expect(result._id).toBe(mockId);
+    expect(NotificationModel.findById).toHaveBeenCalledWith(mockId);
+  });
+
+  it('should throw NotFoundError if notification is not found', async () => {
+    // Arrange
+    const mockId = 'mockId';
+    NotificationModel.findById.mockResolvedValue(null); // Simular que no se encuentra
+
+    // Act & Assert
+    await expect(getNotificationById(mockId)).rejects.toThrowError(NotFoundError);
+  });
+});
+
+
+jest.mock('../models/notificationModel.js');
+
+describe('getNotificationByUserId service', () => {
+  it('should return notifications by userId', async () => {
+    // Arrange
+    const mockUserId = 'mockUserId';
+    const notifications = [
+      { userId: mockUserId, type: 'likes', notificationStatus: 'NOT SEEN' },
+    ];
+    NotificationModel.find.mockResolvedValue(notifications);
+
+    // Act
+    const result = await getNotificationByUserId(mockUserId);
+
+    // Assert
+    expect(result).toEqual(notifications);
+    expect(NotificationModel.find).toHaveBeenCalledWith({ userId: mockUserId });
+  });
+
+  it('should throw NotFoundError if no notifications found for userId', async () => {
+    // Arrange
+    const mockUserId = 'mockUserId';
+    NotificationModel.find.mockResolvedValue(null); // Simular que no se encuentran notificaciones
+
+    // Act & Assert
+    await expect(getNotificationByUserId(mockUserId)).rejects.toThrowError(NotFoundError);
+  });
 });
