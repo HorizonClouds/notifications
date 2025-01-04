@@ -1,3 +1,5 @@
+import { stdOptions } from './standardResponse.js';
+
 class CustomError extends Error {
   constructor(message, statusCode) {
     super(message);
@@ -67,3 +69,21 @@ export const errorHandlerMiddleware = (err, req, res, next) => {
 
   res.status(statusCode).json(response);
 };
+
+export class UnauthorizedError extends Error {
+  constructor(message = 'Unauthorized', details) {
+    super(message);
+    this.details = details;
+    this.appCode = stdOptions.appCodes.unauthorized;
+    this.statusCode = stdOptions.codes.unauthorized;
+  }
+}
+
+export class ForbiddenError extends Error {
+  constructor(message = 'Forbidden', details) {
+    super(message);
+    this.details = details;
+    this.appCode = stdOptions.appCodes.forbidden;
+    this.statusCode = stdOptions.codes.forbidden;
+  }
+}
