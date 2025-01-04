@@ -13,6 +13,9 @@ import cors from 'cors'; // Import CORS middleware
 import './utils/logger.js';
 logger.info('Service is starting...');
 import './utils/consumer.js'; // Importa el consumidor para que se ejecute automáticamente
+import bodyParser from 'body-parser';
+//import protectedRoutes from './routes/protectedRoutes.js';  // Importamos las rutas protegidas
+
 
 dotenv.config(); // Load environment variables
 
@@ -23,6 +26,7 @@ const port = process.env.BACKEND_PORT || 6303; // Define port
 app.use(express.json()); // Parse JSON bodies
 app.use(cors());
 app.use(standardResponseMiddleware); 
+app.use(bodyParser.json());  // Middleware para parsear JSON
 
 // Middleware to handle JSON parsing errors
 app.use((err, req, res, next) => {
@@ -32,6 +36,10 @@ app.use((err, req, res, next) => {
 
 // Routes
 app.use('/api', notificationRoute);
+
+
+// Rutas protegidas (requieren autenticación)
+//app.use('/api', protectedRoutes);
 
 app.get('/', (req, res) => {
   // Redirect to API documentation
