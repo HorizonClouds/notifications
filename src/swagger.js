@@ -1,12 +1,45 @@
-// swagger.js
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUI from 'swagger-ui-express';
 
-import swaggerUi from 'swagger-ui-express'; // Import swagger-ui-express
-
-// Load the OpenAPI specification from YAML file
-import YAML from 'yamljs';
-const swaggerDocument = YAML.load('src/api/oas.yaml');
-// Export the Swagger UI setup
-const swaggerSetup = (app) => {
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument)); // Serve Swagger UI
+const options = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Notifications API',
+      version: '1.0.0',
+      description: 'API documentation for Notification microservice',
+    },
+    servers: [
+      {
+        url: '/api/v1/notifications/api/',
+        description: 'Api Gateway server',
+      },
+      {
+        url: '/api/',
+        description: 'Development server',
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
+  },
+  apis: ['./src/api/**/*.yaml'],
 };
-export { swaggerSetup };
+
+const swaggerSpec = swaggerJSDoc(options);
+
+//Use this to serve the swagger documentation
+export const swaggerSetup = (app) => {
+  app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+};

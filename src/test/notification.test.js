@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import {
   getAllNotifications,
@@ -9,6 +9,20 @@ import {
   deleteNotification,
 } from '../services/notificationService.js';
 import NotificationModel from '../models/notificationModel.js';
+
+//PRUEBA DE COMPONENTES 
+
+import { createNotification } from '../services/notificationService.js';
+import NotificationModel from '../models/notificationModel.js';
+import NotificationSummary from '../models/notificationModelSummary.js';
+import { BadRequestError } from '../errors/index.js';
+import { ThrottleManager } from '../utils/throttleManager.js';
+import { getNotificationById } from '../services/notificationService.js';
+import NotificationModel from '../models/notificationModel.js';
+import { NotFoundError } from '../errors/index.js';
+import { getNotificationByUserId } from '../services/notificationService.js';
+import NotificationModel from '../models/notificationModel.js';
+import { NotFoundError } from '../errors/index.js';
 
 const exampleNotification = {
   userId: new mongoose.Types.ObjectId(),
@@ -121,3 +135,5 @@ describe('[Integration][Service] Notification Tests', () => {
   });
 
 });
+
+//PRUEBA DE COMPONENTES

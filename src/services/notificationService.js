@@ -1,5 +1,18 @@
 import NotificationModel from '../models/notificationModel.js';
+import NotificationSummary from '../models/notificationModelSummary.js'; // Importar la vista materializada
 import { NotFoundError, BadRequestError } from '../errors/index.js';
+
+// Función para actualizar la vista materializada
+const updateNotificationSummary = async (userId, increment) => {
+  await NotificationSummary.findOneAndUpdate(
+    { userId },
+    { 
+      $inc: { unseenCount: increment }, // Incrementar o decrementar el contador
+      $set: { lastUpdated: new Date() }
+    },
+    { upsert: true } // Crear un nuevo documento si no existe
+  );
+};
 
 export const getNotificationById = async (id) => {
   try {
@@ -19,7 +32,14 @@ export const getNotificationById = async (id) => {
 export const createNotification = async (notificationData) => {
   try {
     const newNotification = new NotificationModel(notificationData);
-    return await newNotification.save();
+    const createdNotification = await newNotification.save();
+
+    // Si la notificación es no vista, actualizar la vista materializada
+    if (createdNotification.notificationStatus === 'NOT SEEN') {
+      await updateNotificationSummary(createdNotification.userId, 1);
+    }
+
+    return createdNotification;
   } catch (error) {
     console.error('Error creating notification:', error);
     throw new BadRequestError('Error creating notification', error);
@@ -52,6 +72,12 @@ export const updateNotification = async (id, updateData) => {
     if (!notification) {
       throw new NotFoundError('Notification not found');
     }
+
+    // Si la notificación se marca como "SEEN", actualizar la vista materializada
+    if (updateData.notificationStatus && updateData.notificationStatus === 'SEEN' && notification.notificationStatus !== 'SEEN') {
+      await updateNotificationSummary(notification.userId, -1);
+    }
+
     return notification;
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -67,6 +93,10 @@ export const deleteNotification = async (id) => {
     if (!notification) {
       throw new NotFoundError('Notification not found');
     }
+
+    // Actualizamos la vista materializada independientemente del estado de la notificación
+    await updateNotificationSummary(notification.userId, -1);
+
     return notification;
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -75,6 +105,7 @@ export const deleteNotification = async (id) => {
     throw new BadRequestError('Error deleting notification', error);
   }
 };
+
 
 export default {
   getNotificationById,

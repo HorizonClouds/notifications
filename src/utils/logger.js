@@ -1,4 +1,3 @@
-
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -59,4 +58,5 @@ const debug = async (message) => {
   }
 };
 
-global.logger = { info, debug };
+export let logger = { info, debug };
+global.logger = logger;
