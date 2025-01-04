@@ -57,18 +57,12 @@ export const createNotification = async (req, res, next) => {
 
       const throttledCreateNotification = throttleManager.throttle(
           async () => {
-              // Llamada al servicio para crear una nueva notificación
               const newNotification = await notificationService.createNotification(req.body);
-
-              // Emitir evento de creación de notificación
               notificationEvents.emitNotificationCreated(newNotification);
 
-              // Actualizar la vista materializada solo si la notificación es "NOT SEEN"
               if (newNotification.notificationStatus === 'NOT SEEN') {
                   await updateNotificationSummary(newNotification.userId, 0);
               }
-
-              // Respuesta exitosa con los datos creados y mensaje
               res.sendSuccess(
                   removeMongoFields(newNotification),
                   'Notification created successfully',
