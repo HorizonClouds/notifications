@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import {
   getAllNotifications,
