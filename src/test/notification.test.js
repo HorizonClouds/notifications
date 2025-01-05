@@ -7,6 +7,7 @@ import {
   getNotificationById,
   updateNotification,
   deleteNotification,
+  getNotificationByUserId,
 } from '../services/notificationService.js';
 import NotificationModel from '../models/notificationModel.js';
 
@@ -60,6 +61,13 @@ describe('[Integration][Service] Notification Tests', () => {
   beforeEach(async () => {
     const notification = await createNotification(exampleNotification);
     notificationId = notification._id.toString();
+
+    // Crear NotificationSummary para el usuario
+    await NotificationSummary.create({
+      userId: exampleNotification.userId,
+      unseenCount: 1,
+      lastUpdated: new Date(),
+    });
   });
 
   afterEach(async () => {
@@ -83,6 +91,7 @@ describe('[Integration][Service] Notification Tests', () => {
     expect(dbNotification.resourceId.toString()).toBe(anotherNotification.resourceId.toString());
     expect(dbNotification.notificationStatus).toBe(anotherNotification.notificationStatus);
     expect(dbNotification.createdAt).toBeInstanceOf(Date);
+
   });
 
   it('[+] should GET a notification by ID', async () => {
@@ -132,6 +141,18 @@ describe('[Integration][Service] Notification Tests', () => {
   it('[-] should return NOT FOUND for deleting a non-existent notification', async () => {
     const invalidId = new mongoose.Types.ObjectId();
     await expect(deleteNotification(invalidId.toString())).rejects.toThrow('Notification not found');
+  });
+
+  it('[+] should GET notifications by user ID', async () => {
+    const result = await getNotificationByUserId(exampleNotification.userId.toString());
+    expect(result).toHaveLength(1);
+    expect(result[0].userId.toString()).toBe(exampleNotification.userId.toString());
+    expect(result[0].type).toBe(exampleNotification.type);
+  });
+
+  it('[-] should return NOT FOUND for getting notifications by non-existent user ID', async () => {
+    const invalidUserId = new mongoose.Types.ObjectId();
+    await expect(getNotificationByUserId(invalidUserId.toString())).rejects.toThrow(NotFoundError);
   });
 
 });

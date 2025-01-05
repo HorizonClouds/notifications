@@ -10,7 +10,7 @@ const updateNotificationSummary = async (userId, increment) => {
       $inc: { unseenCount: increment }, // Incrementar o decrementar el contador
       $set: { lastUpdated: new Date() }
     },
-    { upsert: true } // Crear un nuevo documento si no existe
+    { upsert: true} // Crear un nuevo documento si no existe
   );
 };
  
@@ -74,17 +74,20 @@ export const getAllNotifications = async () => {
 
 export const updateNotification = async (id, updateData) => {
   try {
-    const notification = await NotificationModel.findByIdAndUpdate(id, updateData, { new: true });
+    const notification = await NotificationModel.findById(id);
     if (!notification) {
       throw new NotFoundError('Notification not found');
     }
 
-    // Si la notificación se marca como "SEEN", actualizar la vista materializada
-    if (updateData.notificationStatus && updateData.notificationStatus === 'SEEN' && notification.notificationStatus !== 'SEEN') {
+    const originalStatus = notification.notificationStatus;
+    const updatedNotification = await NotificationModel.findByIdAndUpdate(id, updateData, { new: true });
+
+    // Si la notificación pasa de "NOT SEEN" a "SEEN", actualizar la vista materializada
+    if (originalStatus === 'NOT SEEN' && updatedNotification.notificationStatus === 'SEEN') {
       await updateNotificationSummary(notification.userId, -1);
     }
 
-    return notification;
+    return updatedNotification;
   } catch (error) {
     if (error instanceof NotFoundError) {
       throw error;
