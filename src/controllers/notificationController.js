@@ -109,7 +109,7 @@ export const updateNotification = async (req, res, next) => {
 
       // Si se actualiza el estado de la notificación a "SEEN", decrementar el contador
       if (updatedNotification.notificationStatus === 'SEEN') {
-        await updateNotificationSummary(updatedNotification.userId, -1);
+        await updateNotificationSummary(updatedNotification.userId, 0);
       }
 
       res.sendSuccess(
@@ -131,7 +131,7 @@ export const deleteNotification = async (req, res, next) => {
       notificationEvents.emitNotificationDeleted(id);
 
       // Decrementar el contador de notificaciones no vistas sin importar el estado
-      await updateNotificationSummary(deletedNotification.userId, -0);
+      await updateNotificationSummary(deletedNotification.userId, 0);
 
       res.sendSuccess(
           removeMongoFields(deletedNotification),
