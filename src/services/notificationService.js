@@ -27,7 +27,6 @@ export const createNotification = async (notificationData) => {
 
     return createdNotification;
   } catch (error) {
-    console.error('Error creating notification:', error);
     throw new BadRequestError('Error creating notification', error);
   }
 };
