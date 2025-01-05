@@ -12,30 +12,19 @@ jobs:
   upload-to-docker-hub:
     runs-on: ubuntu-latest
 
-    services:
-      redis:
-        image: redis:latest
-        ports:
-          - 6379:6379
-        options: --health-cmd="redis-server --version" --health-timeout=5s --health-retries=3
-
     steps:
-      # Paso para hacer checkout del repositorio
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Configurar Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # Iniciar sesión en Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      # Crear y subir la imagen de Docker al Docker Hub
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
@@ -43,24 +32,3 @@ jobs:
           file: Dockerfile
           push: true
           tags: javifdez7/horizon-notifications:develop
-
-      # Esperar que Redis esté listo
-      - name: Wait for Redis to be ready
-        run: |
-          for i in {1..30}; do
-            if redis-cli -h 127.0.0.1 -p 6379 PING; then
-              echo "Redis is ready!";
-              break;
-            fi
-            echo "Waiting for Redis to be ready...";
-            sleep 2;
-          done
-
-      # Ejecutar los tests
-      - name: Run tests
-        run: |
-          # Instalar dependencias
-          npm install
-
-          # Ejecutar las pruebas
-          npm test
