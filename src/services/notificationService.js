@@ -1,8 +1,6 @@
 import NotificationModel from '../models/notificationModel.js';
 import NotificationSummary from '../models/notificationModelSummary.js'; // Importar la vista materializada
 import { NotFoundError, BadRequestError } from '../errors/index.js';
-import redisClient from '../utils/redisClient.js';
-import { CACHE_TTL } from '../utils/config.js';
 
 // Función para actualizar la vista materializada
 const updateNotificationSummary = async (userId, increment) => {
