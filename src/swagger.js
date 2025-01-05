@@ -11,7 +11,7 @@ const options = {
     },
     servers: [
       {
-        url: '/api/v1/notifications/api/',
+        url: '/api/v1/',
         description: 'Api Gateway server',
       },
       {
