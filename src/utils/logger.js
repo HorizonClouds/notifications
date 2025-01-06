@@ -1,32 +1,26 @@
-import dotenv from 'dotenv';
+import config from '../utils/config.js';
 
-dotenv.config();
-
-const CLIENT_ID = process.env.KAFKA_SERVICE_NAME ?? 'UNKNOWN';
-const logLevel = process.env.LOGLEVEL ? process.env.LOGLEVEL : 'INFO';
-let kafkaEnabled = process.env.KAFKA_ENABLED === 'true';
+const CLIENT_ID = config.kafkaServiceName
+const logLevel = config.logLevel;
+const kafkaEnabled = config.kafkaEnabled;
 let kafkaBroker, kafkaTopic, kafka, producer;
 
 if (kafkaEnabled) {
-  try {
-    const { Kafka, Partitioners } = await import('kafkajs');
-    kafkaBroker = process.env.KAFKA_BROKER ?? 'localhost:9092';
-    kafkaTopic = process.env.KAFKA_TOPIC ?? 'logs';
-    kafka = new Kafka({ clientId: CLIENT_ID, brokers: [kafkaBroker], createPartitioner: Partitioners.LegacyPartitioner });
-    producer = kafka.producer();
-
-    const connectKafka = async () => {
-      await producer.connect();
-    };
-
-    await connectKafka();
-  } catch (error) {
-    console.log("Kafka not found")
-    kafkaEnabled = false;
-  }
+  process.env.KAFKAJS_NO_PARTITIONER_WARNING = 1
+  const { Kafka, Partitioners } = await import('kafkajs');
+  kafkaBroker = config.kafkaBroker;
+  kafkaTopic = config.kafkaTopic;
+  kafka = new Kafka({ clientId: CLIENT_ID, brokers: [kafkaBroker], createPartitioner: Partitioners.LegacyPartitioner });
+  producer = kafka.producer();
+  
+  const connectKafka = async () => {
+    await producer.connect();
+  };
+  
+  await connectKafka();
 }
 
-console.log(`Logger initialized for ${CLIENT_ID}; with variables: ${kafkaEnabled}, ${logLevel}, ${kafkaBroker}, ${kafkaTopic}`);
+console.log(`Logger initialized for ${CLIENT_ID}; with variables: logLevel=${logLevel}, kafkaEnabled=${kafkaEnabled}, kafkaBroker=${kafkaBroker}, kafkaTopic=${kafkaTopic}`);
 
 const logMessage = (level, message) => {
   const timestamp = new Date().toISOString();
@@ -58,5 +52,18 @@ const debug = async (message) => {
   }
 };
 
-export let logger = { info, debug };
-global.logger = logger;
+const error = async (message) => {
+  const formattedMessage = logMessage('ERROR', message);
+  console.error(formattedMessage);
+  await sendLogToKafka(formattedMessage);
+};
+
+const warn = async (message) => {
+  const formattedMessage = logMessage('WARN', message);
+  console.warn(formattedMessage);
+  await sendLogToKafka(formattedMessage);
+};
+
+
+global.logger = { info, debug ,error, warn};
+export default logger = { info, debug ,error, warn}; 
