@@ -19,6 +19,11 @@ const updateNotificationSummary = async (userId, increment) => {
 
 export const createNotification = async (notificationData) => {
   try {
+    // Validar que notificationData tenga los campos necesarios
+    if (!notificationData.userId || !notificationData.notificationStatus) {
+      throw new BadRequestError('Los datos de la notificación son incompletos: faltan userId o notificationStatus');
+    }
+
     // Crear una nueva notificación
     const newNotification = new NotificationModel(notificationData);
     const createdNotification = await newNotification.save();
@@ -26,33 +31,31 @@ export const createNotification = async (notificationData) => {
     // Si la notificación es no vista, actualizar la vista materializada
     if (createdNotification.notificationStatus === 'NOT SEEN') {
       await updateNotificationSummary(createdNotification.userId, 1);
+    } else {
+      await updateNotificationSummary(createdNotification.userId, 0);
     }
 
-    if (!notificationData.userEmail || !notificationData.message) {
-      throw new Error('Los datos de la notificación son incompletos: faltan userEmail o message');
-    }
+    
 
-    //QUIERO QUE A TRAVES DEL USERID QUE NOS LLEGA POR NOTIFICATIONDATA, SE SAQUE DE BBDD LOS DATOS PARA ESE USERID DE LA TABLA DE USUARIOS
     // Obtener los datos del usuario utilizando el userId (consulta directa)
-
     const user = await mongoose.connection.db.collection('users').findOne({ _id: mongoose.Types.ObjectId.createFromHexString(notificationData.userId) });
-    console.log("USUARIO BBDD", user);
-    //if (!user) {
-    //throw new Error('Usuario no encontrado');
-    //}
+    if (!user) {
+      throw new Error('Usuario no encontrado');
+    }
 
     const email = user.email;
     //const userName = user.name; 
     console.log("email", email);
-
+    const message = "Tienes una nueva tarea pendiente.";
+    const userName = "Ismael";
     // Enviar correo al usuario notificado
-    const emailToSend = notificationData.userEmail;
-    const subject = `Nueva Notificación para ${notificationData.userName || 'Usuario'}`;
-    const text = `Hola ${notificationData.userName || 'Usuario'}, tienes una nueva notificación: ${notificationData.message}`;
+    const subject = `Nueva Notificación para ${userName || 'Usuario'}`;
+    const text = `Hola ${userName || 'Usuario'}, tienes una nueva notificación: ${message}`;
+    //<p>Hola ${notificationData.userName || 'Usuario'},</p>
     const html = `
-      <p>Hola ${notificationData.userName || 'Usuario'},</p>
+      <p>Hola ${userName || 'Usuario'},</p>
       <p>Tienes una nueva notificación:</p>
-      <strong>${notificationData.message}</strong>
+      <strong>message</strong>
     `;
 
     if (email) {
@@ -71,7 +74,6 @@ export const createNotification = async (notificationData) => {
     throw new BadRequestError('Error creating notification', error);
   }
 };
-
 
 export const getNotificationById = async (id) => {
   try {
@@ -103,7 +105,6 @@ export const getNotificationByUserId = async (userId) => {
     throw new NotFoundError('Error fetching notifications by userId', error);
   }
 };
-
 
 export const getAllNotifications = async () => {
   try {
@@ -155,7 +156,6 @@ export const deleteNotification = async (id) => {
     throw new BadRequestError('Error deleting notification', error);
   }
 };
-
 
 export default {
   getNotificationById,

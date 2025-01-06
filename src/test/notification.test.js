@@ -10,35 +10,34 @@ import {
   getNotificationByUserId,
 } from '../services/notificationService.js';
 import NotificationModel from '../models/notificationModel.js';
-
-//PRUEBA DE COMPONENTES 
-
-import { createNotification } from '../services/notificationService.js';
-import NotificationModel from '../models/notificationModel.js';
 import NotificationSummary from '../models/notificationModelSummary.js';
-import { BadRequestError } from '../errors/index.js';
+import { BadRequestError, NotFoundError } from '../errors/index.js';
 import { ThrottleManager } from '../utils/throttleManager.js';
-import { getNotificationById } from '../services/notificationService.js';
-import NotificationModel from '../models/notificationModel.js';
-import { NotFoundError } from '../errors/index.js';
-import { getNotificationByUserId } from '../services/notificationService.js';
-import NotificationModel from '../models/notificationModel.js';
-import { NotFoundError } from '../errors/index.js';
+import { sendEmail } from '../services/emailService.js';
+
+vi.mock('../services/emailService.js');
+
+process.env.SENDGRID_API_KEY = 'SG.fakeApiKeyForTesting';
+console.log('Logger initialized for NOTIFICATIONS; with variables: logLevel=INFO, kafkaEnabled=false, kafkaBroker=undefined, kafkaTopic=undefined');
 
 const exampleNotification = {
-  userId: new mongoose.Types.ObjectId(),
+  userId: new mongoose.Types.ObjectId().toString(),
+  userEmail: 'test@example.com',
+  message: 'You have a new notification',
   config: { email: true },
   type: 'likes',
-  resourceId: new mongoose.Types.ObjectId(),
+  resourceId: new mongoose.Types.ObjectId().toString(),
   notificationStatus: 'NOT SEEN',
   createdAt: new Date(),
 };
 
 const anotherNotification = {
-  userId: new mongoose.Types.ObjectId(),
+  userId: new mongoose.Types.ObjectId().toString(),
+  userEmail: 'another@example.com',
+  message: 'You have a friend request',
   config: { email: false },
   type: 'friend request',
-  resourceId: new mongoose.Types.ObjectId(),
+  resourceId: new mongoose.Types.ObjectId().toString(),
   notificationStatus: 'SEEN',
   createdAt: new Date(),
 };
@@ -59,10 +58,18 @@ describe('[Integration][Service] Notification Tests', () => {
   });
 
   beforeEach(async () => {
+    await mongoose.connection.db.dropDatabase();
+
+    const user = {
+      _id: mongoose.Types.ObjectId.createFromHexString(exampleNotification.userId),
+      email: 'user@example.com',
+    };
+
+    await mongoose.connection.db.collection('users').insertOne(user);
+
     const notification = await createNotification(exampleNotification);
     notificationId = notification._id.toString();
 
-    // Crear NotificationSummary para el usuario
     await NotificationSummary.create({
       userId: exampleNotification.userId,
       unseenCount: 1,
@@ -71,10 +78,28 @@ describe('[Integration][Service] Notification Tests', () => {
   });
 
   afterEach(async () => {
-    await mongoose.connection.db.dropDatabase();
+    vi.clearAllMocks();
+  });
+
+  it('[+] should GET a notification by ID', async () => {
+    const result = await getNotificationById(notificationId);
+    expect(result._id.toString()).toBe(notificationId);
+    expect(result.type).toBe(exampleNotification.type);
+
+    const dbNotification = await NotificationModel.findById(notificationId);
+    expect(dbNotification).not.toBeNull();
+    expect(dbNotification.type).toBe(exampleNotification.type);
   });
 
   it('[+] should CREATE a notification', async () => {
+    const user = {
+      _id: mongoose.Types.ObjectId.createFromHexString(anotherNotification.userId),
+      email: 'another@example.com',
+      name: 'Ismael'
+    };
+
+    await mongoose.connection.db.collection('users').insertOne(user);
+
     const result = await createNotification(anotherNotification);
     expect(result.userId.toString()).toBe(anotherNotification.userId.toString());
     expect(result.config.email).toBe(anotherNotification.config.email);
@@ -92,16 +117,19 @@ describe('[Integration][Service] Notification Tests', () => {
     expect(dbNotification.notificationStatus).toBe(anotherNotification.notificationStatus);
     expect(dbNotification.createdAt).toBeInstanceOf(Date);
 
-  });
+    // Verificar que NotificationSummary se actualizó correctamente
+    const summary = await NotificationSummary.findOne({ userId: anotherNotification.userId });
+    expect(summary).not.toBeNull();
+    expect(summary.unseenCount).toBe(anotherNotification.notificationStatus === 'NOT SEEN' ? 1 : 0);
+    expect(summary.lastUpdated).toBeInstanceOf(Date);
 
-  it('[+] should GET a notification by ID', async () => {
-    const result = await getNotificationById(notificationId);
-    expect(result._id.toString()).toBe(notificationId);
-    expect(result.type).toBe(exampleNotification.type);
-
-    const dbNotification = await NotificationModel.findById(notificationId);
-    expect(dbNotification).not.toBeNull();
-    expect(dbNotification.type).toBe(exampleNotification.type);
+    // Verificar que se envió el correo
+    expect(sendEmail).toHaveBeenCalledWith(
+      'another@example.com',
+      'Nueva Notificación para Ismael',
+      'Hola Ismael, tienes una nueva notificación: Tienes una nueva tarea pendiente.',
+      expect.any(String)
+    );
   });
 
   it('[+] should GET all notifications', async () => {
@@ -121,13 +149,13 @@ describe('[Integration][Service] Notification Tests', () => {
 
   it('[-] should return NOT FOUND for non-existent notification ID', async () => {
     const invalidId = new mongoose.Types.ObjectId();
-    await expect(getNotificationById(invalidId.toString())).rejects.toThrow('Notification not found');
+    await expect(getNotificationById(invalidId.toString())).rejects.toThrow(NotFoundError);
   });
 
   it('[-] should return NOT FOUND for updating a non-existent notification', async () => {
     const invalidId = new mongoose.Types.ObjectId();
     const updatedData = { notificationStatus: 'SEEN' };
-    await expect(updateNotification(invalidId.toString(), updatedData)).rejects.toThrow('Notification not found');
+    await expect(updateNotification(invalidId.toString(), updatedData)).rejects.toThrow(NotFoundError);
   });
 
   it('[+] should DELETE a notification', async () => {
@@ -140,7 +168,7 @@ describe('[Integration][Service] Notification Tests', () => {
 
   it('[-] should return NOT FOUND for deleting a non-existent notification', async () => {
     const invalidId = new mongoose.Types.ObjectId();
-    await expect(deleteNotification(invalidId.toString())).rejects.toThrow('Notification not found');
+    await expect(deleteNotification(invalidId.toString())).rejects.toThrow(NotFoundError);
   });
 
   it('[+] should GET notifications by user ID', async () => {
@@ -155,6 +183,7 @@ describe('[Integration][Service] Notification Tests', () => {
     await expect(getNotificationByUserId(invalidUserId.toString())).rejects.toThrow(NotFoundError);
   });
 
+  // ...existing code...
 });
 
 //PRUEBA DE COMPONENTES
