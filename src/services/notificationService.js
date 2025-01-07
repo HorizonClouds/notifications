@@ -157,11 +157,29 @@ export const deleteNotification = async (id) => {
   }
 };
 
+export const getNotificationSummaryByUserId = async (userId) => {
+  try {
+    const notificationSummary = await NotificationSummary.findOne({ userId });
+
+    if (!notificationSummary) {
+      throw new NotFoundError('Notification summary not found for the specified userId');
+    }
+
+    return notificationSummary;
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new BadRequestError('Error fetching notification summary by userId', error);
+  }
+};
+
 export default {
   getNotificationById,
   createNotification,
   getNotificationByUserId,
   getAllNotifications,
   updateNotification,
-  deleteNotification
+  deleteNotification,
+  getNotificationSummaryByUserId
 };

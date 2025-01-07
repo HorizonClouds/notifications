@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import mongoose from 'mongoose';
 import NotificationModel from '../models/notificationModel.js';
 import NotificationSummary from '../models/notificationModelSummary.js';
-import { createNotification, updateNotification, deleteNotification } from '../services/notificationService.js';
+import { createNotification, updateNotification, deleteNotification, getNotificationSummaryByUserId } from '../services/notificationService.js';
 import { BadRequestError, NotFoundError } from '../errors/index.js';
 import { sendEmail } from '../services/emailService.js';
 import logger from '../utils/logger.js';
@@ -63,7 +63,6 @@ describe('[Component] Notification Service', () => {
     );
     expect(logger.info).toHaveBeenCalledWith(`Correo enviado al usuario: user@example.com`);
   });
-
 
   it('[-] should throw BadRequestError when creating a notification fails', async () => {
     NotificationModel.mockImplementation(() => ({
@@ -162,5 +161,25 @@ describe('[Component] Notification Service', () => {
     await expect(deleteNotification('nonexistentId')).rejects.toThrow(NotFoundError);
     expect(NotificationModel.findByIdAndDelete).toHaveBeenCalledWith('nonexistentId');
   });
-  
+
+  it('[+] should GET notification summary by user ID', async () => {
+    NotificationSummary.findOne.mockResolvedValue({
+      userId: mockNotification.userId,
+      unseenCount: 1,
+      lastUpdated: new Date(),
+    });
+
+    const result = await getNotificationSummaryByUserId(mockNotification.userId);
+    expect(result).not.toBeNull();
+    expect(result.userId).toBe(mockNotification.userId);
+    expect(result.unseenCount).toBe(1);
+  });
+
+  it('[-] should return NOT FOUND for getting notification summary by non-existent user ID', async () => {
+    NotificationSummary.findOne.mockResolvedValue(null);
+
+    const invalidUserId = new mongoose.Types.ObjectId().toString();
+    await expect(getNotificationSummaryByUserId(invalidUserId)).rejects.toThrow(NotFoundError);
+  });
+
 });

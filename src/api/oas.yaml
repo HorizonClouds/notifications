@@ -211,6 +211,114 @@ paths:
                   timestamp:
                     type: string
                     example: '2023-10-01T12:00:00.000Z'
+  /notifications/user/{userId}:
+    get:
+      summary: Get notifications by user ID
+      tags:
+        - Notification
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          description: ID of the user to get notifications for
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of notifications for the specified user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Success!
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                  appCode:
+                    type: string
+                    example: OK
+                  timestamp:
+                    type: string
+                    example: '2023-10-01T12:00:00.000Z'
+        '404':
+          description: Notifications not found for the specified userId
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Notifications not found
+                  appCode:
+                    type: string
+                    example: UNKNOWN_ERROR
+                  timestamp:
+                    type: string
+                    example: '2023-10-01T12:00:00.000Z'
+  /notifications/userSummary/{userId}:
+    get:
+      summary: Get notification summary by user ID
+      tags:
+        - Notification
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          description: ID of the user to get notification summary for
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The notification summary for the specified user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Success!
+                  data:
+                    $ref: '#/components/schemas/NotificationSummary'
+                  appCode:
+                    type: string
+                    example: OK
+                  timestamp:
+                    type: string
+                    example: '2023-10-01T12:00:00.000Z'
+        '404':
+          description: Notification summary not found for the specified userId
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Notification summary not found
+                  appCode:
+                    type: string
+                    example: UNKNOWN_ERROR
+                  timestamp:
+                    type: string
+                    example: '2023-10-01T12:00:00.000Z'
 components:
   schemas:
     Notification:
@@ -274,3 +382,20 @@ components:
         - type
         - resourceId
         - notificationStatus
+    NotificationSummary:
+      type: object
+      properties:
+        userId:
+          type: string
+          example: '60c72b2f9b1d8f0d8d0b6f9f'
+        unseenCount:
+          type: integer
+          example: 5
+        lastUpdated:
+          type: string
+          format: date-time
+          example: '2023-10-01T12:00:00.000Z'
+      required:
+        - userId
+        - unseenCount
+        - lastUpdated

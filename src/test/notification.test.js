@@ -8,6 +8,7 @@ import {
   updateNotification,
   deleteNotification,
   getNotificationByUserId,
+  getNotificationSummaryByUserId,
 } from '../services/notificationService.js';
 import NotificationModel from '../models/notificationModel.js';
 import NotificationSummary from '../models/notificationModelSummary.js';
@@ -183,7 +184,17 @@ describe('[Integration][Service] Notification Tests', () => {
     await expect(getNotificationByUserId(invalidUserId.toString())).rejects.toThrow(NotFoundError);
   });
 
-  // ...existing code...
+  it('[+] should GET notification summary by user ID', async () => {
+    const result = await getNotificationSummaryByUserId(exampleNotification.userId.toString());
+    expect(result).not.toBeNull();
+    expect(result.userId.toString()).toBe(exampleNotification.userId.toString());
+    expect(result.unseenCount).toBe(1);
+  });
+
+  it('[-] should return NOT FOUND for getting notification summary by non-existent user ID', async () => {
+    const invalidUserId = new mongoose.Types.ObjectId();
+    await expect(getNotificationSummaryByUserId(invalidUserId.toString())).rejects.toThrow(NotFoundError);
+  });
+
 });
 
-//PRUEBA DE COMPONENTES

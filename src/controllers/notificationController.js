@@ -141,3 +141,13 @@ export const deleteNotification = async (req, res, next) => {
       next(error);
   }
 };
+
+export const getNotificationSummary = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const summary = await notificationService.getNotificationSummaryByUserId(userId);
+    res.sendSuccess(summary);
+  } catch (error) {
+    next(error);
+  }
+};
