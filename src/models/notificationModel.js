@@ -7,7 +7,7 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['itinerary comment', 'report', 'itinerary review', 'likes', 'pub comment', 'friend request', 'message'],
+    enum: ['itinerary', 'report', 'itinerary review', 'likes', 'pub comment', 'friend request', 'message'],
     required: true
   },
   resourceId: { type: mongoose.Schema.Types.ObjectId, required: true },

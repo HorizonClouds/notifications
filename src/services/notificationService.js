@@ -37,13 +37,11 @@ export const createNotification = async (notificationData) => {
 
     
 
-    // Obtener los datos del usuario utilizando el userId (consulta directa)
-    const user = await mongoose.connection.db.collection('users').findOne({ _id: mongoose.Types.ObjectId.createFromHexString(notificationData.userId) });
-    if (!user) {
-      throw new Error('Usuario no encontrado');
-    }
-
-    const email = user.email;
+    //const user = await mongoose.connection.db.collection('users').findOne({ _id: mongoose.Types.ObjectId.createFromHexString(notificationData.userId) });
+    //if (!user) {
+    //  throw new Error('Usuario no encontrado');
+    //}
+    const email = "ismaelmesazyout@gmail.com";
     //const userName = user.name; 
     console.log("email", email);
     const message = "Tienes una nueva tarea pendiente.";
