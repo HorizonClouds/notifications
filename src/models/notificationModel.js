@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const notificationSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userId: { type: String, ref: 'User', required: true },
   config: {
     email: { type: Boolean, default: false }
   },
@@ -10,7 +10,7 @@ const notificationSchema = new mongoose.Schema({
     enum: ['itinerary', 'report', 'itinerary review', 'likes', 'pub comment', 'friend request', 'message'],
     required: true
   },
-  resourceId: { type: mongoose.Schema.Types.ObjectId, required: true },
+  resourceId: { type: String, required: true },
   notificationStatus: {
     type: String,
     enum: ['SEEN', 'NOT SEEN'],
