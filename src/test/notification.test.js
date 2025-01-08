@@ -95,7 +95,7 @@ describe('[Integration][Service] Notification Tests', () => {
   it('[+] should CREATE a notification', async () => {
     const user = {
       _id: mongoose.Types.ObjectId.createFromHexString(anotherNotification.userId),
-      email: 'another@example.com',
+      email: 'ismaelmesazyout@gmail.com',
       name: 'Ismael'
     };
 
@@ -126,10 +126,14 @@ describe('[Integration][Service] Notification Tests', () => {
 
     // Verificar que se envió el correo
     expect(sendEmail).toHaveBeenCalledWith(
-      'another@example.com',
+      'ismaelmesazyout@gmail.com',
       'Nueva Notificación para Ismael',
       'Hola Ismael, tienes una nueva notificación: Tienes una nueva tarea pendiente.',
-      expect.any(String)
+      `
+      <p>Hola Ismael,</p>
+      <p>Tienes una nueva notificación:</p>
+      <strong>message</strong>
+    `
     );
   });
 
