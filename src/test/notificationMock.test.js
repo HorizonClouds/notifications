@@ -40,7 +40,7 @@ describe('[Component] Notification Service', () => {
     }));
     
     NotificationSummary.findOneAndUpdate.mockResolvedValue({});
-    const user = { _id: mockNotification.userId, email: 'user@example.com', name: 'Ismael' };
+    const user = { _id: mockNotification.userId, email: 'ismaelmesazyout@gmail.com', name: 'Ismael' };
 
     // Mock de la función collection y findOne
     mongoose.connection.db.collection.mockReturnValue({
@@ -56,12 +56,16 @@ describe('[Component] Notification Service', () => {
       { upsert: true }
     );
     expect(sendEmail).toHaveBeenCalledWith(
-      'user@example.com',
+      'ismaelmesazyout@gmail.com',
       'Nueva Notificación para Ismael',
       'Hola Ismael, tienes una nueva notificación: Tienes una nueva tarea pendiente.',
-      expect.any(String)
+      `
+      <p>Hola Ismael,</p>
+      <p>Tienes una nueva notificación:</p>
+      <strong>message</strong>
+    `
     );
-    expect(logger.info).toHaveBeenCalledWith(`Correo enviado al usuario: user@example.com`);
+    expect(logger.info).toHaveBeenCalledWith(`Correo enviado al usuario: ismaelmesazyout@gmail.com`);
   });
 
   it('[-] should throw BadRequestError when creating a notification fails', async () => {
