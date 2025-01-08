@@ -57,18 +57,12 @@ export const createNotification = async (req, res, next) => {
 
       const throttledCreateNotification = throttleManager.throttle(
           async () => {
-              // Llamada al servicio para crear una nueva notificación
               const newNotification = await notificationService.createNotification(req.body);
-
-              // Emitir evento de creación de notificación
               notificationEvents.emitNotificationCreated(newNotification);
 
-              // Actualizar la vista materializada solo si la notificación es "NOT SEEN"
               if (newNotification.notificationStatus === 'NOT SEEN') {
                   await updateNotificationSummary(newNotification.userId, 0);
               }
-
-              // Respuesta exitosa con los datos creados y mensaje
               res.sendSuccess(
                   removeMongoFields(newNotification),
                   'Notification created successfully',
@@ -115,7 +109,7 @@ export const updateNotification = async (req, res, next) => {
 
       // Si se actualiza el estado de la notificación a "SEEN", decrementar el contador
       if (updatedNotification.notificationStatus === 'SEEN') {
-        await updateNotificationSummary(updatedNotification.userId, -1);
+        await updateNotificationSummary(updatedNotification.userId, 0);
       }
 
       res.sendSuccess(
@@ -137,7 +131,7 @@ export const deleteNotification = async (req, res, next) => {
       notificationEvents.emitNotificationDeleted(id);
 
       // Decrementar el contador de notificaciones no vistas sin importar el estado
-      await updateNotificationSummary(deletedNotification.userId, -0);
+      await updateNotificationSummary(deletedNotification.userId, 0);
 
       res.sendSuccess(
           removeMongoFields(deletedNotification),
@@ -145,5 +139,15 @@ export const deleteNotification = async (req, res, next) => {
       );
   } catch (error) {
       next(error);
+  }
+};
+
+export const getNotificationSummary = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const summary = await notificationService.getNotificationSummaryByUserId(userId);
+    res.sendSuccess(summary);
+  } catch (error) {
+    next(error);
   }
 };

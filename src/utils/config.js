@@ -11,7 +11,11 @@ const config = {
   jwtSecret: process.env.JWT_SECRET || 'horizon-secret',
   jwtServiceName: process.env.JWT_SERVICE_NAME || 'notifications-service',
   kafkaServiceName: process.env.KAFKA_SERVICE_NAME || 'NOTIFICATIONS',
+  kafkaEnabled: process.env.KAFKA_ENABLED === 'true',
   logLevel: process.env.LOGLEVEL || 'INFO',
+  SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
+  FROM_EMAIL: 'ismaelmesazyout@gmail.com',
+  gatewayUrl: process.env.GATEWAY_URL || 'http://localhost:6900',
 };
 
 export default config;  // Exporta como 'default'
